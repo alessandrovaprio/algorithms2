@@ -1,0 +1,5 @@
+package upo.graph.implementation;
+
+public class AdjListDir {
+
+}
