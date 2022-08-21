@@ -6,7 +6,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="/home/alex/Downloads/newgraph(2).jar" sourcepath="/home/alex/Downloads/Upo Graph Javadoc(3).zip"/>
 	<classpathentry kind="lib" path="/home/alex/Downloads/Upo Graph Javadoc(3).zip"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
+	<classpathentry kind="lib" path="/home/alex/Downloads/newgraph.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

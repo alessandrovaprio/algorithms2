@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import upo.graph.base.*;
+import upo.graph.base.Graph;
+import upo.graph.base.VisitForest;
 import upo.graph.base.VisitForest.Color;
 import upo.graph.base.VisitForest.VisitType;
+import upo.graph.basenew.*;
 
 /**
  * Implementazione mediante <strong>liste di adiacenza</strong> di un grafo <strong>orientato non pesato</strong>.

@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import upo.graph.base.*;
-import upo.graph.base.VisitForest.Color;
-import upo.graph.base.VisitForest.VisitType;
+import upo.graph.basenew.VisitForest;
+import upo.graph.basenew.WeightedGraph;
+import upo.graph.basenew.VisitForest.Color;
+import upo.graph.basenew.VisitForest.VisitType;
+import upo.graph.basenew.*;
 
 
 /**
@@ -26,6 +28,9 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 	
 	private final int INFINITE=Integer.MAX_VALUE;
 	
+	public List<String> getVerticesList() {
+		return verticesList;
+	}
 	public AdjMatrixUndirWeight() {
 		size=0;
 		verticesMatrix= new double[0][0];
@@ -35,14 +40,14 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 	public void stampa() {
 		System.out.println();
 		System.out.print(" ");
-		for(int k=0; k<size; k++) System.out.print("   "+k);
+		for(int k=0; k<size; k++) System.out.print("   "+verticesList.get(k));
 		System.out.println();
 		System.out.print("  ");
 		for(int k=0; k<size; k++) System.out.print(" ___");
 		System.out.println();
 		
 		for(int i=0; i<size; i++) {
-			System.out.print(i+" ");
+			System.out.print(verticesList.get(i)+" ");
 			for(int j=0; j<size; j++) {
 				if(verticesMatrix[i][j]==this.INFINITE) 
 					System.out.print("|"+"\u221E  ");
@@ -64,7 +69,9 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 		for(int i=0; i<size; i++) { 
 			for(int j=0; j<size; j++) {
 				temp[i][j]=verticesMatrix[i][j];
-				verticesList.add(v);
+				if (verticesList.indexOf(v) > -1) {
+					verticesList.add(v);
+				}
 			}
 		}
 		
@@ -77,6 +84,7 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 			verticesMatrix[size][i]=this.INFINITE;
 		verticesMatrix[size][size]=0;
 		
+		verticesList.add(v);
 		size++;
 		return size;
 	}
@@ -141,11 +149,12 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 		if(containsVertex(sourceVertexIndex)==false || containsVertex(targetVertexIndex)==false)
 			throw new IllegalArgumentException();
 		
-		if(verticesMatrix[sourceVertexIndex][targetVertexIndex]==this.INFINITE || verticesMatrix[sourceVertexIndex][targetVertexIndex]==0)
-			throw new NoSuchElementException();
-		
 		int sourceIndex = verticesList.indexOf(sourceVertexIndex);
 		int targetIndex = verticesList.indexOf(targetVertexIndex);
+		
+		if(verticesMatrix[sourceIndex][targetIndex]==this.INFINITE || verticesMatrix[sourceIndex][targetIndex]==0)
+			throw new NoSuchElementException();
+		
 
 		verticesMatrix[sourceIndex][targetIndex]=this.INFINITE;
 		verticesMatrix[targetIndex][sourceIndex]=this.INFINITE;
@@ -176,7 +185,7 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 		int sourceIndex = verticesList.indexOf(sourceVertexIndex);
 		int targetIndex = verticesList.indexOf(targetVertexIndex);
 
-		if(verticesMatrix[sourceIndex][targetIndex]!=this.INFINITE && verticesMatrix[sourceVertexIndex][targetVertexIndex]!=0)
+		if(verticesMatrix[sourceIndex][targetIndex]!=this.INFINITE && verticesMatrix[sourceIndex][targetIndex]!=0)
 			return true;
 		else 
 			return false;
@@ -230,7 +239,9 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 		
 		List<String> stack = new LinkedList<String>();
 		VisitForest visita=new VisitForest(this, VisitType.DFS);
+		
 		visita.setColor(startingVertex, Color.GRAY);
+		
 		//visita startingVertex
 		System.out.println("Sto visitando il vertice "+startingVertex+".");
 		//fine visita
@@ -240,6 +251,7 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 			u=stack.get(0);
 			boolean passato=false;
 			for(String v : this.getAdjacent(u)) {
+				System.out.println("visita.getColor(v) "+visita.getColor(v)+"." + v);
 				if(visita.getColor(v)==Color.WHITE) {
 					passato=true;
 					visita.setColor(v, Color.GRAY);
@@ -293,12 +305,12 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 			//se non trovo vertici adiacenti ad U ne scelgo uno non adiacente e lo aggiungo alla frangia
 			if(stack.isEmpty()) {
 			    for(int i=0; i<size; i++)
-			    	if(visita.getColor(i)==Color.WHITE) {
-			    		visita.setColor(i, Color.GRAY);
+			    	if(visita.getColor(verticesList.get(i))==Color.WHITE) {
+			    		visita.setColor(verticesList.get(i), Color.GRAY);
 			    		//visita i
 						System.out.println("Sto visitando il vertice "+i+".");
 						//fine visita
-					    stack.add(0, i); //push
+					    stack.add(0, verticesList.get(i)); //push
 					    break;
 			    	}
 			}
@@ -308,24 +320,24 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 	}
 
 	@Override
-	public Set<Set<Integer>> stronglyConnectedComponents() throws UnsupportedOperationException {
+	public Set<Set<String>> stronglyConnectedComponents() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Set<Set<Integer>> connectedComponents() throws UnsupportedOperationException {
-		Set<Set<Integer>> componentiConnesse=new HashSet<Set<Integer>>();
+	public Set<Set<String>> connectedComponents() throws UnsupportedOperationException {
+		Set<Set<String>> componentiConnesse=new HashSet<Set<String>>();
 		VisitForest visitaTotale=new VisitForest(this, VisitType.DFS_TOT);
 		
 		for(int i=0; i<size; i++) {
-			if(visitaTotale.getColor(i)==Color.WHITE) {
-				Set<Integer> alberoDiVisita=new HashSet<Integer>();
-				alberoDiVisita.add(i); //aggiungo il primo vertice bianco trovato(la radice senza predecessori)
-				VisitForest visitaSingola=this.getDFSTree(i);
+			if(visitaTotale.getColor(verticesList.get(i))==Color.WHITE) {
+				Set<String> alberoDiVisita=new HashSet<String>();
+				alberoDiVisita.add(verticesList.get(i)); //aggiungo il primo vertice bianco trovato(la radice senza predecessori)
+				VisitForest visitaSingola=this.getDFSTree(verticesList.get(i));
 				for(int j=0; j<size; j++) {
-					if(visitaSingola.getParent(j)!=null) {
-						alberoDiVisita.add(j);
-						visitaTotale.setColor(j, Color.BLACK);
+					if(visitaSingola.getPartent(verticesList.get(j))!=null) {
+						alberoDiVisita.add(verticesList.get(j));
+						visitaTotale.setColor(verticesList.get(j), Color.BLACK);
 					}
 				}
 				componentiConnesse.add(alberoDiVisita);
@@ -336,54 +348,41 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 	}
 	
 	@Override
-	public double getEdgeWeight(int sourceVertexIndex, int targetVertexIndex) throws IllegalArgumentException, NoSuchElementException {
-		if(containsVertex(sourceVertexIndex)==false || containsVertex(targetVertexIndex)==false)
+	public double getEdgeWeight(String sourceVertex, String targetVertex) throws IllegalArgumentException, NoSuchElementException {
+		if(containsVertex(sourceVertex)==false || containsVertex(targetVertex)==false)
 			throw new IllegalArgumentException();
 		
-		if(containsEdge(sourceVertexIndex, targetVertexIndex)==false)
+		if(containsEdge(sourceVertex, targetVertex)==false)
 			throw new NoSuchElementException();
 		
-		return verticesMatrix[sourceVertexIndex][targetVertexIndex];
+		return verticesMatrix[verticesList.indexOf(sourceVertex) ][verticesList.indexOf(targetVertex)];
 	}
 
 	@Override
-	public void setEdgeWeight(int sourceVertexIndex, int targetVertexIndex, double weight) throws IllegalArgumentException, NoSuchElementException {
-		if(containsVertex(sourceVertexIndex)==false || containsVertex(targetVertexIndex)==false)
+	public void setEdgeWeight(String sourceVertex, String targetVertex, double weight) throws IllegalArgumentException, NoSuchElementException {
+		if(containsVertex(sourceVertex)==false || containsVertex(targetVertex)==false)
 			throw new IllegalArgumentException();
 		
-		if(containsEdge(sourceVertexIndex, targetVertexIndex)==false)
+		if(containsEdge(sourceVertex, targetVertex)==false)
 			throw new NoSuchElementException();
 		
-		verticesMatrix[sourceVertexIndex][targetVertexIndex]=weight;
-		verticesMatrix[targetVertexIndex][sourceVertexIndex]=weight;
+		verticesMatrix[verticesList.indexOf(sourceVertex)][verticesList.indexOf(targetVertex)]=weight;
+		verticesMatrix[verticesList.indexOf(targetVertex)][verticesList.indexOf(sourceVertex)]=weight;
 	}
 
-	@Override
-	public VisitForest getBFSTree(String arg0) throws UnsupportedOperationException, IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public VisitForest getDFSTOTForest(String[] arg0) throws UnsupportedOperationException, IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 	
 	@Override
 	public int getVertexIndex(String arg0) {
-		// TODO Auto-generated method stub
-		return 0;
+		int index = this.verticesList.indexOf(arg0);
+		if (index < 0) {
+			throw new NoSuchElementException();
+		}
+		return index;
 	}
 
-	@Override
-	public String getVertexLabel(Integer arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
+	
 	@Override
 	public String[] topologicalSort() throws UnsupportedOperationException {
 		// TODO Auto-generated method stub
@@ -393,45 +392,44 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 	@Override
 	public WeightedGraph getBellmanFordShortestPaths(String arg0)
 			throws UnsupportedOperationException, IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public WeightedGraph getDijkstraShortestPaths(String arg0)
 			throws UnsupportedOperationException, IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public double getEdgeWeight(String arg0, String arg1) throws IllegalArgumentException, NoSuchElementException {
-		// TODO Auto-generated method stub
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public WeightedGraph getFloydWarshallShortestPaths() throws UnsupportedOperationException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public WeightedGraph getKruskalMST() throws UnsupportedOperationException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public WeightedGraph getPrimMST(String arg0) throws UnsupportedOperationException, IllegalArgumentException {
+		throw new UnsupportedOperationException();
+	}
+	@Override
+	public String getVertexLabel(Integer arg0) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 	@Override
-	public void setEdgeWeight(String arg0, String arg1, double arg2)
-			throws IllegalArgumentException, NoSuchElementException {
+	public VisitForest getBFSTree(String p0) throws UnsupportedOperationException, IllegalArgumentException {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
+	@Override
+	public VisitForest getDFSTOTForest(String[] p0) throws UnsupportedOperationException, IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+
 }
