@@ -15,6 +15,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import upo.graph.basenew.VisitForest;
 import upo.graph.basenew.WeightedGraph;
+import upo.graph.basenew.VisitForest.Color;
 import upo.graph20022545.AdjMatrixUndirWeight;
 
 class AdjMatrixUndirWeightTest {
@@ -146,11 +147,45 @@ class AdjMatrixUndirWeightTest {
         @DisplayName("Test DFS")
         public void dfsTest() {
 			VisitForest forest = graph.getDFSTree("A");
-			Set<String>roots = forest.getRoots();
-			System.out.println("roots "+ roots.toString());
-			
+			// nodes not linked are white
+			assertEquals(forest.getColor("H"), Color.WHITE);
+			assertEquals(forest.getColor("I"), Color.WHITE);
+			// nodes visited are black
+			assertEquals(forest.getColor("B"), Color.BLACK);
+			assertEquals(forest.getColor("E"), Color.BLACK);
 			
         }
+		
+		@Test
+        @DisplayName("Test DFS Tutti i vertici")
+        public void dfsTestTotal() {
+            VisitForest forest = graph.getDFSTOTForest("A");
+
+            assertEquals(forest.getColor("H"), Color.BLACK);
+            assertEquals(forest.getColor("I"), Color.BLACK);
+
+            assertEquals(forest.getColor("B"), Color.BLACK);
+            assertEquals(forest.getColor("E"), Color.BLACK);
+            
+        }
+		
+		@Test
+        @DisplayName("Test Ciclico")
+        public void dfsTestCyclic() {
+		    boolean isCyclic = graph.isCyclic();
+		    // A->B->E->A
+            assertEquals(isCyclic, true);	            
+		}
+		
+		@Test
+        @DisplayName("Test Componenti Connesse")
+        public void dfsTestConnectedComponents() {
+		    Set<Set<String>> components = graph.connectedComponents();
+            // A->B->E->A
+            assertEquals(true, true);               
+        }
+		
+		
 		
 	}
 	

@@ -204,10 +204,10 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 	@Override
 	public boolean isCyclic() {
 		VisitForest visita=new VisitForest(this, VisitType.DFS_TOT);
-//		for(int i=0; i<size; i++) {
-//			if(visita.getColor(""+i)==Color.WHITE && visitaRicCiclo(visita, ""+i)) 
-//				return true;
-//		}
+		for(String v: this.verticesList) {
+			if(visita.getColor(v)==Color.WHITE && visitaRicCiclo(visita, v)) 
+				return true;
+		}
 		return false;
 	}
 	
@@ -238,9 +238,9 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 		if(this.containsVertex(startingVertex)==false) throw new IllegalArgumentException();
 		
 		List<String> stack = new LinkedList<String>();
-		VisitForest visita=new VisitForest(this, VisitType.DFS);
+		VisitForest visit=new VisitForest(this, VisitType.DFS);
 		
-		visita.setColor(startingVertex, Color.GRAY);
+		visit.setColor(startingVertex, Color.GRAY);
 		
 		//visita startingVertex
 		System.out.println("Sto visitando il vertice "+startingVertex+".");
@@ -249,13 +249,14 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 		String u;
 		while(stack.isEmpty()==false) {
 			u=stack.get(0);
-			boolean passato=false;
+			boolean passed=false;
 			for(String v : this.getAdjacent(u)) {
-				System.out.println("visita.getColor(v) "+visita.getColor(v)+"." + v);
-				if(visita.getColor(v)==Color.WHITE) {
-					passato=true;
-					visita.setColor(v, Color.GRAY);
-					visita.setParent(v, u);
+				System.out.println("visita.getColor(v) "+visit.getColor(v)+"." + v);
+				if(visit.getColor(v)==Color.WHITE) {
+					passed=true;
+					visit.setColor(v, Color.GRAY);
+					visit.setParent(v, u);
+					visit.setDistance(v, getEdgeWeight(u,v));
 					//visita v
 					System.out.println("Sto visitando il vertice "+v+".");
 					//fine visita
@@ -263,12 +264,12 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 					break;
 				}
 			}
-			if(passato==false) {
-				visita.setColor(u, Color.BLACK);
+			if(passed==false) {
+				visit.setColor(u, Color.BLACK);
 				stack.remove(0);
 			}
 		}
-		return visita;
+		return visit;
 	}
 
 	@Override
@@ -291,6 +292,7 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 					passato=true;
 					visita.setColor(v, Color.GRAY);
 					visita.setParent(v, u);
+					visita.setDistance(v, this.getEdgeWeight(u, v));
 					//visita v
 					System.out.println("Sto visitando il vertice "+v+".");
 					//fine visita
@@ -326,25 +328,25 @@ public class AdjMatrixUndirWeight implements WeightedGraph{
 
 	@Override
 	public Set<Set<String>> connectedComponents() throws UnsupportedOperationException {
-		Set<Set<String>> componentiConnesse=new HashSet<Set<String>>();
+		Set<Set<String>> connectedComponents=new HashSet<Set<String>>();
 		VisitForest visitaTotale=new VisitForest(this, VisitType.DFS_TOT);
 		
 		for(int i=0; i<size; i++) {
 			if(visitaTotale.getColor(verticesList.get(i))==Color.WHITE) {
-				Set<String> alberoDiVisita=new HashSet<String>();
-				alberoDiVisita.add(verticesList.get(i)); //aggiungo il primo vertice bianco trovato(la radice senza predecessori)
-				VisitForest visitaSingola=this.getDFSTree(verticesList.get(i));
+				Set<String> visitTree=new HashSet<String>();
+				visitTree.add(verticesList.get(i)); //aggiungo il primo vertice bianco trovato(la radice senza predecessori)
+				VisitForest visit=this.getDFSTree(verticesList.get(i));
 				for(int j=0; j<size; j++) {
-					if(visitaSingola.getPartent(verticesList.get(j))!=null) {
-						alberoDiVisita.add(verticesList.get(j));
+					if(visit.getPartent(verticesList.get(j))!=null) {
+						visitTree.add(verticesList.get(j));
 						visitaTotale.setColor(verticesList.get(j), Color.BLACK);
 					}
 				}
-				componentiConnesse.add(alberoDiVisita);
+				connectedComponents.add(visitTree);
 			}
 		}
 		
-		return componentiConnesse;
+		return connectedComponents;
 	}
 	
 	@Override
