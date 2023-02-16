@@ -19,86 +19,89 @@ import upo.graph.basenew.*;
  */
 public class AdjListDir implements Graph{
 
-	private List<LinkedList<Integer>> vertici;	
+	private List<LinkedList<String>> adjList;	
+	private List<String> verticesList;
 	private int size;
 	
 	public AdjListDir() {		
-		vertici=new LinkedList<LinkedList<Integer>>();	
+		adjList=new LinkedList<LinkedList<String>>();	
 		size=0;
 	}
 	
 	public void stampa() {		
-		for(int i=0; i<vertici.size(); i++) {
-			System.out.println("Indice: "+i+", Vertici adiacenti: "+vertici.get(i));
+		for(int i=0; i<adjList.size(); i++) {
+			System.out.println("Indice: "+i+", Vertici adiacenti: "+adjList.get(i));
 		}
 	}
 	
 	@Override
-	public int addVertex() {
-		LinkedList<Integer> verticiAdiacenti=new LinkedList<Integer>(); 
-		vertici.add(verticiAdiacenti);
-		
+	public int addVertex(String v) {
+		LinkedList<String> verticiAdiacenti=new LinkedList<String>(); 
+		adjList.add(verticiAdiacenti);
+		verticesList.add(v);
 		size++;
 		return size-1;
 	}
 
 	@Override
-	public boolean containsVertex(int index) {
-		if(size>index) return true;
-		else return false;
+	public boolean containsVertex(String v) {
+		return adjList.contains(v);
 	}
 
 	@Override
-	public void removeVertex(int index) throws NoSuchElementException {
-		if(containsVertex(index)==false) throw new NoSuchElementException();
+	public void removeVertex(String v) throws NoSuchElementException {
+		if(containsVertex(v)==false) throw new NoSuchElementException();
 			
-		vertici.remove(index);
+//		adjList.remove(v);
+		
 		size--;
 			
 		if(size==0) return;
-		
+		int idxToDel=0; 
 		for(int u=0; u<size; u++) {
 			//correggendo le liste di adiacenza dopo l'eliminazione
-			for(int i=0; i<vertici.get(u).size(); i++) {
-				if(vertici.get(u).get(i)==index) { //si tratta del vertice eliminato
-					vertici.get(u).remove(i);
+			for(int i=0; i<adjList.get(u).size(); i++) {
+				if(adjList.get(u).get(i)==v) { //si tratta del vertice eliminato
+					adjList.get(u).remove(i);
+					idxToDel=i;
 				    i--; // devo ricontrollare la posizione corrente, altrimenti salterei il controllo di un vertice	
 				}
-				else if(vertici.get(u).get(i)>index)
-					vertici.get(u).set(i, (vertici.get(u).get(i))-1); 
+				else if(i > idxToDel)
+					adjList.get(u).set(i, (adjList.get(u).get(i-1))); 
 			}
 			//fine visita
 		}
+		verticesList.remove(v);
 	}
 
 	@Override
-	public void addEdge(int sourceVertexIndex, int targetVertexIndex) throws IllegalArgumentException {
+	public void addEdge(String sourceVertexIndex, String targetVertexIndex) throws IllegalArgumentException {
 		 if(containsVertex(sourceVertexIndex)==false || containsVertex(targetVertexIndex)==false) 
 			 throw new IllegalArgumentException();
 		 
-		 vertici.get(sourceVertexIndex).add(targetVertexIndex);
+		 adjList.get(adjList.indexOf(sourceVertexIndex)).add(targetVertexIndex);
 	}
 
 	@Override
-	public boolean containsEdge(int sourceVertexIndex, int targetVertexIndex) throws IllegalArgumentException {
+	public boolean containsEdge(String sourceVertexIndex, String targetVertexIndex) throws IllegalArgumentException {
 		 if(containsVertex(sourceVertexIndex)==false || containsVertex(targetVertexIndex)==false) 
 			 throw new IllegalArgumentException();
 		 
-		 if(vertici.get(sourceVertexIndex).contains(targetVertexIndex)) return true;
+		 if(adjList.get(adjList.indexOf(sourceVertexIndex)).contains(targetVertexIndex)) return true;
 		 else return false;
 	}
 
 	@Override
-	public void removeEdge(int sourceVertexIndex, int targetVertexIndex) throws IllegalArgumentException, NoSuchElementException {
+	public void removeEdge(String sourceVertexIndex, String targetVertexIndex) throws IllegalArgumentException, NoSuchElementException {
 		 if(containsVertex(sourceVertexIndex)==false || containsVertex(targetVertexIndex)==false) 
 			 throw new IllegalArgumentException();
 		 
-		 if(vertici.get(sourceVertexIndex).contains(targetVertexIndex)==false)
+		 if(adjList.get(adjList.indexOf(sourceVertexIndex)).contains(targetVertexIndex)==false)
 			 throw new NoSuchElementException();
 		 else {
-			 for(int i=0; i<vertici.get(sourceVertexIndex).size(); i++) {
-				 if(vertici.get(sourceVertexIndex).get(i)==targetVertexIndex) {
-					 vertici.get(sourceVertexIndex).remove(i);
+			 for(int i=0; i<adjList.get(adjList.indexOf(sourceVertexIndex)).size(); i++) {
+				 if(adjList.get(adjList.indexOf(sourceVertexIndex)).get(i)==targetVertexIndex) {
+					 adjList.get(adjList.indexOf(sourceVertexIndex)).remove(i);
 					 break;
 				 }
 			 }
@@ -106,23 +109,23 @@ public class AdjListDir implements Graph{
 	}
 
 	@Override
-	public Set<Integer> getAdjacent(int vertexIndex) throws NoSuchElementException {
+	public Set<String> getAdjacent(String vertexIndex) throws NoSuchElementException {
 		if(containsVertex(vertexIndex)==false) throw new NoSuchElementException();
 		
-		Set<Integer> ret=new HashSet<Integer>();
+		Set<String> ret=new HashSet<String>();
 		
-		for(Integer temp : vertici.get(vertexIndex))
+		for(String temp : adjList.get(adjList.indexOf(vertexIndex)))
 			ret.add(temp);
 		
 		return ret;
 	}
 
 	@Override
-	public boolean isAdjacent(int targetVertexIndex, int sourceVertexIndex) throws IllegalArgumentException {
+	public boolean isAdjacent(String targetVertexIndex, String sourceVertexIndex) throws IllegalArgumentException {
 		if(containsVertex(sourceVertexIndex)==false || containsVertex(targetVertexIndex)==false) 
 			 throw new IllegalArgumentException();
 		
-		if(vertici.get(sourceVertexIndex).contains(targetVertexIndex)) return true;
+		if(adjList.get(adjList.indexOf(sourceVertexIndex)).contains(targetVertexIndex)) return true;
 		else return false;
 	}
 
@@ -140,20 +143,20 @@ public class AdjListDir implements Graph{
 	public boolean isCyclic() {
 		VisitForest visita=new VisitForest(this, VisitType.DFS_TOT);
 		for(int i=0; i<size; i++) {
-			if(visita.getColor(i)==Color.WHITE && visitaRicCiclo(visita, i))
+			if(visita.getColor(verticesList.get(i))==Color.WHITE && visitaRicCiclo(visita, verticesList.get(i)))
 				return true;
 		}
 		return false;
 	}
 	
-	private boolean visitaRicCiclo(VisitForest visita, int u) {
+	private boolean visitaRicCiclo(VisitForest visita, String u) {
 		visita.setColor(u, Color.GRAY);
-		for(Integer v : this.getAdjacent(u)) {
+		for(String v : this.getAdjacent(u)) {
 			if(visita.getColor(v)==Color.WHITE) {
 				visita.setParent(v, u);
 				if(visitaRicCiclo(visita, v)) return true;
 			}
-			else if(v!=visita.getParent(u)) return true;
+			else if(v!=visita.getPartent(u)) return true;
 		}
 		visita.setColor(u, Color.BLACK);
 		return false;
@@ -166,16 +169,16 @@ public class AdjListDir implements Graph{
 	}
 
 	@Override
-	public VisitForest getBFSTree(int startingVertex) throws UnsupportedOperationException, IllegalArgumentException {
+	public VisitForest getBFSTree(String startingVertex) throws UnsupportedOperationException, IllegalArgumentException {
 		if(this.containsVertex(startingVertex)==false)
 			throw new IllegalArgumentException();
 		
 		//algoritmo di visita
 		VisitForest visita=new VisitForest(this, VisitType.BFS);
-		LinkedList<Integer> frangia=new LinkedList<Integer>();
+		LinkedList<String> frangia=new LinkedList<String>();
 		visita.setColor(startingVertex, Color.GRAY);// comincio da startingVertex
 		frangia.add(startingVertex); //enqueue
-		Integer u;
+		String u;
 		while(!frangia.isEmpty()) {
 			u=frangia.get(0); //<-- head()	sempre da posizione 0 che è la testa
 			
@@ -183,7 +186,7 @@ public class AdjListDir implements Graph{
 			System.out.println("Sto visitando il vertice "+u+".\n");
 			//fine visita
 			
-			for(Integer v : vertici.get(u)) {
+			for(String v : adjList.get(adjList.indexOf(u))) {
 				if(visita.getColor(v)==Color.WHITE) {
 				    visita.setColor(v, Color.GRAY);  	
 				    visita.setParent(v, u);
@@ -200,45 +203,45 @@ public class AdjListDir implements Graph{
 	}
 
 	@Override
-	public VisitForest getDFSTree(int startingVertex) throws UnsupportedOperationException, IllegalArgumentException {
+	public VisitForest getDFSTree(String startingVertex) throws UnsupportedOperationException, IllegalArgumentException {
 		if(this.containsVertex(startingVertex)==false) 
 			throw new IllegalArgumentException();
 		
 		//inizializzo ptr
-		Integer[] ptr=new Integer[size];
-		for(int i=0; i<size; i++) {
-			if(vertici.get(i).size()==0)
-				ptr[i]=null;
-			else ptr[i]=0;
-		}
-		
-		//algoritmo di visita
+//		String[] ptr=new String[size];
+//		for(int i=0; i<size; i++) {
+//			if(adjList.get(i).size()==0)
+//				ptr[i]=null;
+//			else ptr[i]=adjList.get(0);
+//		}
+//		
+//		//algoritmo di visita
 		VisitForest visita=new VisitForest(this, VisitType.DFS);
-		LinkedList<Integer> frangia=new LinkedList<Integer>();
-		visita.setColor(startingVertex, Color.GRAY); // comincio da startingVertex
-		//visito startingVertex
-		System.out.println("Sto visitando il vertice "+startingVertex+".\n");
-		//fine visita	
-		frangia.add(startingVertex); //push 
-		Integer v;
-		while(!frangia.isEmpty()) {
-			while(ptr[frangia.get(0)]!=null) {
-				v=vertici.get(frangia.get(0)).get(ptr[frangia.get(0)]);
-				ptr[frangia.get(0)]++;
-				if(ptr[frangia.get(0)]==vertici.get(frangia.get(0)).size())
-					ptr[frangia.get(0)]=null;
-				if(visita.getColor(v)==Color.WHITE) {
-					visita.setColor(v, Color.GRAY);
-					visita.setParent(v, frangia.get(0));
-					//visito v
-					System.out.println("Sto visitando il vertice "+v+".\n");
-					//fine visita	
-					frangia.add(0, v);
-				}
-			}	
-			visita.setColor(frangia.get(0), Color.BLACK);
-			frangia.remove(0);
-		}
+//		LinkedList<String> frangia=new LinkedList<String>();
+//		visita.setColor(startingVertex, Color.GRAY); // comincio da startingVertex
+//		//visito startingVertex
+//		System.out.println("Sto visitando il vertice "+startingVertex+".\n");
+//		//fine visita	
+//		frangia.add(startingVertex); //push 
+//		String v;
+//		while(!frangia.isEmpty()) {
+//			while(ptr[frangia.indexOf(0)]!=null) {
+//				v=adjList.get(frangia.get(0)).get(ptr[0]);
+//				ptr[frangia.get(0)]++;
+//				if(ptr[frangia.get(0)]==adjList.get(frangia.get(0)).size())
+//					ptr[frangia.get(0)]=null;
+//				if(visita.getColor(v)==Color.WHITE) {
+//					visita.setColor(v, Color.GRAY);
+//					visita.setParent(v, frangia.get(0));
+//					//visito v
+//					System.out.println("Sto visitando il vertice "+v+".\n");
+//					//fine visita	
+//					frangia.add(0, v);
+//				}
+//			}	
+//			visita.setColor(frangia.get(0), Color.BLACK);
+//			frangia.remove(0);
+//		}
 		
 		return visita;
 	}
@@ -251,7 +254,7 @@ public class AdjListDir implements Graph{
 		//inizializzo ptr
 		Integer[] ptr=new Integer[size];
 		for(int i=0; i<size; i++) {
-			if(vertici.get(i).size()==0)
+			if(adjList.get(i).size()==0)
 				ptr[i]=null;
 			else ptr[i]=0;
 		}
@@ -269,9 +272,9 @@ public class AdjListDir implements Graph{
 		Integer v;
 		while(!frangia.isEmpty()) {
 			while(ptr[frangia.get(0)]!=null) {
-				v=vertici.get(frangia.get(0)).get(ptr[frangia.get(0)]);
+				v=adjList.get(frangia.get(0)).get(ptr[frangia.get(0)]);
 				ptr[frangia.get(0)]++;
-				if(ptr[frangia.get(0)]==vertici.get(frangia.get(0)).size())
+				if(ptr[frangia.get(0)]==adjList.get(frangia.get(0)).size())
 					ptr[frangia.get(0)]=null;
 				if(visita.getColor(v)==Color.WHITE) {
 					visita.setColor(v, Color.GRAY);
@@ -289,7 +292,7 @@ public class AdjListDir implements Graph{
 			
 			//se non trovo vertici adiacenti ad U ne scelgo uno non adiacente e lo aggiungo alla frangia
 			if(frangia.isEmpty()) {
-			    for(int i=0; i<vertici.size(); i++)
+			    for(int i=0; i<adjList.size(); i++)
 			    	if(visita.getColor(i)==Color.WHITE) {
 			    		visita.setColor(i, Color.GRAY);
 			    		visita.setStartTime(i, time++);
@@ -326,7 +329,7 @@ public class AdjListDir implements Graph{
 		//inizializzo ptr
 		Integer[] ptr=new Integer[size];
 		for(int i=0; i<size; i++) {
-			if(vertici.get(i).size()==0)
+			if(adjList.get(i).size()==0)
 				ptr[i]=null;
 			else ptr[i]=0;
 		}
@@ -347,9 +350,9 @@ public class AdjListDir implements Graph{
 				Integer v;
 				while(!frangia.isEmpty()) {
 					while(ptr[frangia.get(0)]!=null) {
-						v=vertici.get(frangia.get(0)).get(ptr[frangia.get(0)]);
+						v=adjList.get(frangia.get(0)).get(ptr[frangia.get(0)]);
 						ptr[frangia.get(0)]++;
-						if(ptr[frangia.get(0)]==vertici.get(frangia.get(0)).size())
+						if(ptr[frangia.get(0)]==adjList.get(frangia.get(0)).size())
 							ptr[frangia.get(0)]=null;
 						if(visita.getColor(v)==Color.WHITE) {
 							visita.setColor(v, Color.GRAY);
@@ -372,26 +375,26 @@ public class AdjListDir implements Graph{
 	}
 
 	@Override
-	public int[] topologicalSort() throws UnsupportedOperationException {
+	public String[] topologicalSort() throws UnsupportedOperationException {
 		if(this.isDAG()==false) throw new UnsupportedOperationException();
 		
 		VisitForest visita=new VisitForest(this, VisitType.DFS_TOT);
-		int[] ord=new int[size];
+		String[] ord=new String[size];
 		int[] t=new int[] {size-1};
 		int[] time=new int[] {1};
 		
 		for(int i=0; i<size; i++) {
-			if(visita.getColor(i)==Color.WHITE)
-				DFSTopological(visita, i, ord, t, time);
+			if(visita.getColor(verticesList.get(i))==Color.WHITE)
+				DFSTopological(visita, verticesList.get(i), ord, t, time);
 		}
 		return ord;
 	}
 
-	private void DFSTopological(VisitForest visita, int u, int[] ord, int[] t, int[] time) {
+	private void DFSTopological(VisitForest visita, String u, String[] ord, int[] t, int[] time) {
 		visita.setColor(u, Color.GRAY);
 		visita.setStartTime(u, time[0]++);
 		
-		for(Integer v : this.getAdjacent(u)) {
+		for(String v : this.getAdjacent(u)) {
 			if(visita.getColor(v)==Color.WHITE) {
 				visita.setParent(v, u);
 				DFSTopological(visita, v, ord, t, time);
@@ -404,8 +407,8 @@ public class AdjListDir implements Graph{
 	}
 	
 	@Override
-	public Set<Set<Integer>> stronglyConnectedComponents() throws UnsupportedOperationException {
-		Set<Set<Integer>> componentiFortementeConnesse=new HashSet<Set<Integer>>();
+	public Set<Set<String>> stronglyConnectedComponents() throws UnsupportedOperationException {
+		Set<Set<String>> componentiFortementeConnesse=new HashSet<Set<String>>();
 		
 		// 1. Visito G con DFS e costruisco un vettore di vertici in ordine decrescente dei tempi di fine visita
 		VisitForest primaVisita=this.getDFSTOTForest(0);
@@ -413,7 +416,7 @@ public class AdjListDir implements Graph{
 		int indice=0; //indice di tempiDecr
 		for(int i=size*2; i>0; i--) {			
 			for(int v=0; v<size; v++) {
-				if(primaVisita.getEndTime(v)==i) {
+				if(primaVisita.getEndTime(verticesList.get(v))==i) {
 					tempiDecr[indice++]=v;
 					break;
 				}
@@ -423,13 +426,13 @@ public class AdjListDir implements Graph{
 		// 2. Costruisco G trasposto
 		AdjListDir grafoTrasposto=new AdjListDir();
 		for(int i=0; i<size; i++) {
-			grafoTrasposto.addVertex();
+			grafoTrasposto.addVertex(verticesList.get(i));
 		}		
 		
 		for(int i=0; i<size; i++) {
 			for(int v=0; v<size; v++) {
-				if(this.isAdjacent(i, v)) {
-					grafoTrasposto.addEdge(i, v);
+				if(this.isAdjacent(verticesList.get(i), verticesList.get(v))) {
+					grafoTrasposto.addEdge(verticesList.get(i), verticesList.get(v));
 				}
 			}
 		}
@@ -438,16 +441,16 @@ public class AdjListDir implements Graph{
 		VisitForest secondaVisita=grafoTrasposto.getDFSTOTForest(tempiDecr);
 		
 		// riempo la lista di ritorno
-		for(Integer u : secondaVisita.getRoots()) {
-			Set<Integer> alberoDiVisita=trovaAlbero(secondaVisita, u);
+		for(String u : secondaVisita.getRoots()) {
+			Set<String> alberoDiVisita=trovaAlbero(secondaVisita, u);
 			componentiFortementeConnesse.add(alberoDiVisita);
 		}
 		
 		return componentiFortementeConnesse;
 	}
 
-	private Set<Integer> trovaAlbero(VisitForest visita, Integer u){
-		Set<Integer> alberoDiVisita=new HashSet<Integer>();
+	private Set<String> trovaAlbero(VisitForest visita, String u){
+		Set<String> alberoDiVisita=new HashSet<String>();
 		
 		alberoDiVisita.add(u);
 		trovaAlberoRicorsivo(visita, alberoDiVisita, u);
@@ -455,17 +458,17 @@ public class AdjListDir implements Graph{
 		return alberoDiVisita;
 	}
 	
-	private void trovaAlberoRicorsivo(VisitForest visita, Set<Integer> alberoDiVisita, Integer u) {
+	private void trovaAlberoRicorsivo(VisitForest visita, Set<String> alberoDiVisita, String u) {
 		for(int i=0; i<size; i++) {
-			if(visita.getParent(i)==u) {
-				alberoDiVisita.add(i);
-				trovaAlberoRicorsivo(visita, alberoDiVisita, i);
+			if(visita.getPartent(verticesList.get(i))==u) {
+				alberoDiVisita.add(verticesList.get(i));
+				trovaAlberoRicorsivo(visita, alberoDiVisita, verticesList.get(i));
 			}
 		}
 	}
 	
 	@Override
-	public Set<Set<Integer>> connectedComponents() throws UnsupportedOperationException {
+	public Set<Set<String>> connectedComponents() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException();
 	}
 
